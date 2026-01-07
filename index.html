@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Commercial Invoice Generator</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+body { background:#f4f6f9; }
+.preview {
+    background:#fff;
+    padding:30px;
+    border:1px solid #000;
+}
+.preview h2 {
+    text-align:center;
+    margin-bottom:20px;
+}
+@media print {
+    .no-print { display:none !important; }
+    body { background:#fff; }
+    .preview { border:none; padding:0; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container my-4 no-print">
+
+<h1 class="mb-1">Gerador de Commercial Invoice - Importação Simplificada</h1>
+<p class="text-muted">Preencha os dados obrigatórios. A invoice será gerada em inglês.</p>
+
+<!-- EXPORTADOR -->
+<div class="card shadow-sm mb-3">
+<div class="card-header fw-bold">Dados do Fornecedor/Exportador</div>
+<div class="card-body row g-2">
+    <div class="col-md-4"><input id="exCompany" class="form-control" placeholder="Company Name"></div>
+    <div class="col-md-4"><input id="exAddress" class="form-control" placeholder="Address"></div>
+    <div class="col-md-4"><input id="exCity" class="form-control" placeholder="City"></div>
+
+    <div class="col-md-4"><input id="exZip" class="form-control" placeholder="ZIP Code"></div>
+    <div class="col-md-4"><input id="exCountry" class="form-control" placeholder="Country" value="China"></div>
+    <div class="col-md-4"><input id="exContact" class="form-control" placeholder="Contact Name"></div>
+
+    <div class="col-md-6"><input id="exEmail" class="form-control" placeholder="E-mail"></div>
+    <div class="col-md-6"><input id="exPhone" class="form-control" placeholder="Phone"></div>
+</div>
+</div>
+
+<!-- IMPORTADOR -->
+<div class="card shadow-sm mb-3">
+<div class="card-header fw-bold">Dados do Importador (Os dados de quem está importando) </div>
+<div class="card-body row g-2">
+    <div class="col-md-4"><input id="imCompany" class="form-control" placeholder="Company Name"></div>
+    <div class="col-md-4"><input id="imCnpj" class="form-control" placeholder="CNPJ" oninput="maskCNPJ(this)"></div>
+    <div class="col-md-4"><input id="imAddress" class="form-control" placeholder="Address"></div>
+
+    <div class="col-md-4"><input id="imCity" class="form-control" placeholder="City / State"></div>
+    <div class="col-md-4"><input id="imZip" class="form-control" placeholder="ZIP Code"></div>
+    <div class="col-md-4"><input id="imCountry" class="form-control" placeholder="Country" value="Brazil"></div>
+
+    <div class="col-md-6"><input id="imEmail" class="form-control" placeholder="E-mail"></div>
+    <div class="col-md-6"><input id="imPhone" class="form-control" placeholder="Phone"></div>
+</div>
+</div>
+
+<!-- INVOICE -->
+<div class="card shadow-sm mb-3">
+<div class="card-header fw-bold">Dados do Invoice/Pedido</div>
+<div class="card-body row g-2">
+    <div class="col-md-4"><input id="invoiceNumber" class="form-control" placeholder="Invoice Number (Peça para o vendedor)"></div>
+    <div class="col-md-4"><input id="invoiceDate" type="date" class="form-control"></div>
+	<div class="col-md-4">
+		<select id="incoterm" class="form-select">
+			<option value="">Selecione o Incoterm</option>
+			<option value="DAP" selected>DAP – Delivered At Place</option>
+			<option value="CIF">CIF – Cost, Insurance and Freight</option>
+			<option value="FOB">FOB – Free On Board</option>
+			<option value="EXW">EXW – Ex Works</option>
+		</select>
+	</div>
+    <div class="col-md-6"><input id="paymentTerms" class="form-control" value="100 % Advantage"></div>
+    <div class="col-md-6"><input id="purpose" class="form-control" value="Commercial Purpose – Courier"></div>
+</div>
+</div>
+
+<!-- PRODUTOS -->
+<div class="card shadow-sm mb-3">
+<div class="card-header fw-bold d-flex justify-content-between">
+Produtos
+<button class="btn btn-sm btn-outline-primary" onclick="addProduct()">
+    <i class="bi bi-plus-circle"></i>+ Adicionar Produto
+</button>
+</div>
+
+<div class="card-body table-responsive">
+<table class="table table-bordered align-middle text-center" id="productsTable">
+<thead class="table-light">
+<tr>
+<th>Product</th>
+<th>Description</th>
+<th>NCM</th>
+<th>Quantity</th>
+<th>Unit price (USD)</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+</div>
+</div>
+
+<!-- LOGÍSTICA -->
+<div class="card shadow-sm mb-3">
+<div class="card-header fw-bold">Dados da Logística</div>
+<div class="card-body row g-2">
+    <div class="col-md-4"><input id="freight" class="form-control" placeholder="Freight (Valor total do frete em USD)" oninput="formatUSD(this)"></div>
+    <div class="col-md-4"><input id="weight" class="form-control" placeholder="Gross Weight (Peso total em kg)"></div>
+    <div class="col-md-4"><input id="packages" class="form-control" placeholder="Packages (Quantidade de caixas)"></div>
+</div>
+</div>
+
+<button class="btn btn-primary btn-lg" onclick="generateInvoice()">Visualizar Invoice</button>
+<div class="card border-info mt-4 no-print">
+  <div class="card-body">
+    <h6 class="fw-bold mb-2 text-info">
+        📂 Reabrir Invoice Salva
+    </h6>
+
+    <p class="text-muted small mb-2">
+        Selecione um arquivo <strong>.json</strong> gerado anteriormente para
+        carregar os dados novamente no formulário.
+    </p>
+
+    <div class="input-group">
+        <input 
+            type="file" 
+            class="form-control" 
+            accept=".json"
+            onchange="loadInvoice(this)"
+        >
+        <span class="input-group-text">Arquivo .json</span>
+    </div>
+  </div>
+</div>
+
+
+</div>
+
+<!-- PREVIEW -->
+<div class="container mb-5">
+<div id="invoicePreview"></div>
+</div>
+
+<script>
+/* ===================== MASKS ===================== */
+function formatUSD(input) {
+    let v = input.value.replace(/[^0-9.]/g, "");
+    let n = parseFloat(v);
+    if (isNaN(n)) { input.value = ""; return; }
+    input.value = n.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function parseUSD(v){ return Number(v.replace(/,/g,"")) || 0; }
+function maskCNPJ(input){
+    let v=input.value.replace(/\D/g,"");
+    v=v.replace(/^(\d{2})(\d)/,"$1.$2");
+    v=v.replace(/^(\d{2})\.(\d{3})(\d)/,"$1.$2.$3");
+    v=v.replace(/\.(\d{3})(\d)/,".$1/$2");
+    v=v.replace(/(\d{4})(\d)/,"$1-$2");
+    input.value=v;
+}
+
+/* ===================== HELPERS ===================== */
+function isEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
+function isValidCNPJ(cnpj){
+    cnpj=cnpj.replace(/\D/g,"");
+    if(cnpj.length!==14||/^(\d)\1+$/.test(cnpj)) return false;
+    let calc=len=>{
+        let sum=0,pos=len-7;
+        for(let i=len;i>=1;i--){
+            sum+=cnpj.charAt(len-i)*pos--;
+            if(pos<2)pos=9;
+        }
+        let r=11-(sum%11);
+        return r<10?r:0;
+    };
+    return calc(12)==cnpj[12] && calc(13)==cnpj[13];
+}
+
+/* ===================== PRODUCTS ===================== */
+function addProduct(){
+    const row=`<tr>
+        <td><input class="form-control"></td>
+        <td><input class="form-control"></td>
+        <td><input class="form-control"></td>
+        <td><input type="number" min="1" class="form-control"></td>
+        <td><input class="form-control" oninput="formatUSD(this)"></td>
+        <td><button class="btn btn-danger btn-sm" onclick="this.closest('tr').remove()">X</button></td>
+    </tr>`;
+    productsTable.querySelector("tbody").insertAdjacentHTML("beforeend",row);
+}
+addProduct();
+
+/* ===================== VALIDATION ===================== */
+function validateForm(){
+    const required=[exCompany,exAddress,exCity,exZip,imCompany,imAddress,imCity,imZip,invoiceNumber,invoiceDate,incoterm,paymentTerms];
+    for(let f of required){
+        if(!f.value.trim()){ alert("Preencha todos os campos obrigatórios para gerar uma nova Invoice, ou reabra uma Invoice salva."); f.focus(); return false; }
+    }
+	// Exporter Email
+	if (!exEmail.value.trim()) {
+		alert("Informe o e-mail do exportador.");
+		exEmail.focus();
+		return false;
+	}
+	if (!isEmail(exEmail.value)) {
+		alert("E-mail do exportador inválido.");
+		exEmail.focus();
+		return false;
+	}
+
+	// Importer Email
+	if (!imEmail.value.trim()) {
+		alert("Informe o e-mail do importador.");
+		imEmail.focus();
+		return false;
+	}
+	if (!isEmail(imEmail.value)) {
+		alert("E-mail do importador inválido.");
+		imEmail.focus();
+		return false;
+	}
+  
+    if(!isValidCNPJ(imCnpj.value)){ alert("CNPJ inválido."); imCnpj.focus(); return false; }
+    if(!["DAP","CIF","FOB","EXW"].includes(incoterm.value.toUpperCase())){
+        alert("Incoterm inválido."); incoterm.focus(); return false;
+    }
+    if(Number(weight.value)<=0||Number(packages.value)<=0){
+        alert("Peso bruto e volumes devem ser maiores que zero."); return false;
+    }
+    const rows=document.querySelectorAll("#productsTable tbody tr");
+    if(rows.length===0){ alert("Adicione ao menos um produto."); return false; }
+    for(let tr of rows){
+        const i=tr.querySelectorAll("input");
+        if(!i[0].value||Number(i[3].value)<=0||parseUSD(i[4].value)<=0){
+            alert("Produto inválido."); return false;
+        }
+    }
+    return true;
+}
+
+/* ===================== GENERATE ===================== */
+function generateInvoice(){
+    if(!validateForm()) return;
+
+    let rows="", subtotal=0, products=[];
+    document.querySelectorAll("#productsTable tbody tr").forEach(tr=>{
+        const i=tr.querySelectorAll("input");
+        const qty=Number(i[3].value);
+        const unit=parseUSD(i[4].value);
+        const total=qty*unit;
+        subtotal+=total;
+        products.push({product:i[0].value,description:i[1].value,ncm:i[2].value,qty,unit,total});
+        rows+=`<tr>
+            <td>${i[0].value}</td>
+            <td>${i[1].value}</td>
+            <td>${i[2].value}</td>
+            <td class="text-center">${qty}</td>
+            <td class="text-end">${unit.toFixed(2)}</td>
+            <td class="text-end">${total.toFixed(2)}</td>
+        </tr>`;
+    });
+
+    const freightValue=parseUSD(freight.value);
+    const grandTotal=subtotal+freightValue;
+
+    const invoiceData={
+        exporter:{company:exCompany.value,address:exAddress.value,city:exCity.value,zip:exZip.value,country:exCountry.value,email:exEmail.value,phone:exPhone.value,contact:exContact.value},
+        importer:{company:imCompany.value,cnpj:imCnpj.value,address:imAddress.value,city:imCity.value,zip:imZip.value,country:imCountry.value,email:imEmail.value,phone:imPhone.value},
+        invoice:{number:invoiceNumber.value,date:invoiceDate.value,incoterm:incoterm.value,paymentTerms:paymentTerms.value,purpose:purpose.value},
+        logistics:{freight:freightValue,weight:weight.value,packages:packages.value},
+        products, totals:{subtotal,grandTotal}
+    };
+
+	invoicePreview.innerHTML = `
+		<div class="preview">
+
+		<h2>COMMERCIAL INVOICE</h2>
+
+		<p><strong>Exporter:</strong><br><br>
+		<strong>Company Name:</strong> ${invoiceData.exporter.company}<br>
+		<strong>Address:</strong> ${invoiceData.exporter.address}<br>
+		<strong>City:</strong> ${invoiceData.exporter.city} - <strong>Zip code:</strong> ${invoiceData.exporter.zip} - <strong>Country:</strong> ${invoiceData.exporter.country}<br>
+		<strong>Email:</strong> ${invoiceData.exporter.email} | <strong>Phone:</strong> ${invoiceData.exporter.phone}<br>
+		<strong>Contact:</strong> ${invoiceData.exporter.contact}
+		</p>
+
+		<p><strong>Importer:</strong><br><br>
+		<strong>Company Name:</strong> ${invoiceData.importer.company} – <strong>CNPJ:</strong> ${invoiceData.importer.cnpj}<br>
+		<strong>Address:</strong> ${invoiceData.importer.address}<br>
+		<strong>City:</strong> ${invoiceData.importer.city} - <strong>Zip code:</strong> ${invoiceData.importer.zip} - <strong>Country:</strong> ${invoiceData.importer.country}<br>
+		<strong>Email:</strong> ${invoiceData.importer.email} | <strong>Phone:</strong> ${invoiceData.importer.phone}
+		</p>
+
+		<p>
+		<strong>Invoice Number:</strong> ${invoiceData.invoice.number}<br>
+		<strong>Invoice Date:</strong> ${invoiceData.invoice.date}<br>
+		<strong>Incoterm:</strong> ${invoiceData.invoice.incoterm}<br>
+		<strong>Terms of Payment:</strong> ${invoiceData.invoice.paymentTerms}
+		</p>
+
+		<table class="table table-bordered">
+		<tr>
+		<th>Product</th><th>Description</th><th>NCM</th>
+		<th>Quantity</th><th>Unit price (USD)</th><th>Total Amount (USD)</th>
+		</tr>
+		${rows}
+		</table>
+
+		<p class="text-end"><strong>Subtotal:</strong> USD ${subtotal.toFixed(2)}</p>
+		<p class="text-end"><strong>Freight:</strong> USD ${freightValue.toFixed(2)}</p>
+		<p class="text-end fw-bold"><strong>Total:</strong> USD ${grandTotal.toFixed(2)}</p>
+
+		<p>
+		<strong>Gross Weight:</strong> ${invoiceData.logistics.weight} KG<br>
+		<strong>Packages:</strong> ${invoiceData.logistics.packages}<br>
+		<strong>Purpose:</strong> ${invoiceData.invoice.purpose}
+		</p>
+
+		<button class="btn btn-success no-print" onclick="window.print()">Gerar PDF</button>
+		<button class="btn btn-secondary no-print ms-2" onclick="saveCurrentJSON()">Salvar JSON</button>
+		</div>`;
+
+}
+
+/* ===================== JSON ===================== */
+function saveJSON(data){
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob);
+    a.download=`invoice_${data.invoice.number}.json`;
+    a.click();
+}
+function loadInvoice(input){
+    const reader=new FileReader();
+    reader.onload=e=>{
+        const d=JSON.parse(e.target.result);
+        exCompany.value=d.exporter.company;
+        exAddress.value=d.exporter.address;
+        exCity.value=d.exporter.city;
+        exZip.value=d.exporter.zip;
+        exCountry.value=d.exporter.country;
+        exEmail.value=d.exporter.email;
+        exPhone.value=d.exporter.phone;
+        exContact.value=d.exporter.contact;
+
+        imCompany.value=d.importer.company;
+        imCnpj.value=d.importer.cnpj;
+        imAddress.value=d.importer.address;
+        imCity.value=d.importer.city;
+        imZip.value=d.importer.zip;
+        imCountry.value=d.importer.country;
+        imEmail.value=d.importer.email;
+        imPhone.value=d.importer.phone;
+
+        invoiceNumber.value=d.invoice.number;
+        invoiceDate.value=d.invoice.date;
+        incoterm.value=d.invoice.incoterm;
+        paymentTerms.value=d.invoice.paymentTerms;
+        purpose.value=d.invoice.purpose;
+
+        freight.value=d.logistics.freight.toFixed(2);
+        weight.value=d.logistics.weight;
+        packages.value=d.logistics.packages;
+
+        productsTable.querySelector("tbody").innerHTML="";
+        d.products.forEach(p=>{
+            addProduct();
+            const i=productsTable.querySelector("tbody tr:last-child").querySelectorAll("input");
+            i[0].value=p.product;
+            i[1].value=p.description;
+            i[2].value=p.ncm;
+            i[3].value=p.qty;
+            i[4].value=p.unit.toFixed(2);
+        });
+		
+		alert("Invoice carregada com sucesso. Você pode editar os dados e salvar novamente.");
+		generateInvoice();
+    };
+    reader.readAsText(input.files[0]);
+}
+
+function buildInvoiceDataFromForm() {
+
+    let products = [];
+    let subtotal = 0;
+
+    document.querySelectorAll("#productsTable tbody tr").forEach(tr => {
+        const i = tr.querySelectorAll("input");
+        const qty = Number(i[3].value);
+        const unit = parseUSD(i[4].value);
+        const total = qty * unit;
+        subtotal += total;
+
+        products.push({
+            product: i[0].value,
+            description: i[1].value,
+            ncm: i[2].value,
+            qty,
+            unit,
+            total
+        });
+    });
+
+    const freightValue = parseUSD(freight.value);
+    const grandTotal = subtotal + freightValue;
+
+    return {
+        exporter:{
+            company:exCompany.value,
+            address:exAddress.value,
+            city:exCity.value,
+            zip:exZip.value,
+            country:exCountry.value,
+            email:exEmail.value,
+            phone:exPhone.value,
+            contact:exContact.value
+        },
+        importer:{
+            company:imCompany.value,
+            cnpj:imCnpj.value,
+            address:imAddress.value,
+            city:imCity.value,
+            zip:imZip.value,
+            country:imCountry.value,
+            email:imEmail.value,
+            phone:imPhone.value
+        },
+        invoice:{
+            number:invoiceNumber.value,
+            date:invoiceDate.value,
+            incoterm:incoterm.value,
+            paymentTerms:paymentTerms.value,
+            purpose:purpose.value
+        },
+        logistics:{
+            freight:freightValue,
+            weight:weight.value,
+            packages:packages.value
+        },
+        products,
+        totals:{
+            subtotal,
+            grandTotal
+        }
+    };
+}
+
+function saveCurrentJSON() {
+    if (!validateForm()) return;
+    const data = buildInvoiceDataFromForm();
+    saveJSON(data);
+}
+
+</script>
+
+</body>
+</html>
