@@ -38,16 +38,16 @@ body { background:#f4f6f9; }
 <div class="card shadow-sm mb-3">
 <div class="card-header fw-bold">Dados do Fornecedor/Exportador</div>
 <div class="card-body row g-2">
-    <div class="col-md-4"><input id="exCompany" class="form-control" placeholder="Company Name"></div>
-    <div class="col-md-4"><input id="exAddress" class="form-control" placeholder="Address"></div>
-    <div class="col-md-4"><input id="exCity" class="form-control" placeholder="City"></div>
+    <div class="col-md-4"><input id="exCompany" class="form-control" placeholder="Company Name (Nome da empresa fornecedora)"></div>
+    <div class="col-md-4"><input id="exAddress" class="form-control" placeholder="Address (Endereço da empresa fornecedora)"></div>
+    <div class="col-md-4"><input id="exCity" class="form-control" placeholder="City (Cidade)"></div>
 
-    <div class="col-md-4"><input id="exZip" class="form-control" placeholder="ZIP Code"></div>
-    <div class="col-md-4"><input id="exCountry" class="form-control" placeholder="Country" value="China"></div>
-    <div class="col-md-4"><input id="exContact" class="form-control" placeholder="Contact Name"></div>
+    <div class="col-md-4"><input id="exZip" class="form-control" placeholder="ZIP Code (CEP)"></div>
+    <div class="col-md-4"><input id="exCountry" class="form-control" placeholder="Country (País)" value="China"></div>
+    <div class="col-md-4"><input id="exContact" class="form-control" placeholder="Contact Name (Nome do vendedor)"></div>
 
     <div class="col-md-6"><input id="exEmail" class="form-control" placeholder="E-mail"></div>
-    <div class="col-md-6"><input id="exPhone" class="form-control" placeholder="Phone"></div>
+    <div class="col-md-6"><input id="exPhone" class="form-control" placeholder="Phone (Telefone ou Celular)"></div>
 </div>
 </div>
 
@@ -55,16 +55,16 @@ body { background:#f4f6f9; }
 <div class="card shadow-sm mb-3">
 <div class="card-header fw-bold">Dados do Importador (Os dados de quem está importando) </div>
 <div class="card-body row g-2">
-    <div class="col-md-4"><input id="imCompany" class="form-control" placeholder="Company Name"></div>
+    <div class="col-md-4"><input id="imCompany" class="form-control" placeholder="Company Name (Sua razão social)"></div>
     <div class="col-md-4"><input id="imCnpj" class="form-control" placeholder="CNPJ" oninput="maskCNPJ(this)"></div>
-    <div class="col-md-4"><input id="imAddress" class="form-control" placeholder="Address"></div>
+    <div class="col-md-4"><input id="imAddress" class="form-control" placeholder="Address (Seu endereço)"></div>
 
-    <div class="col-md-4"><input id="imCity" class="form-control" placeholder="City / State"></div>
-    <div class="col-md-4"><input id="imZip" class="form-control" placeholder="ZIP Code"></div>
-    <div class="col-md-4"><input id="imCountry" class="form-control" placeholder="Country" value="Brazil"></div>
+    <div class="col-md-4"><input id="imCity" class="form-control" placeholder="City / State (Cidade e Estado)"></div>
+    <div class="col-md-4"><input id="imZip" class="form-control" placeholder="ZIP Code (CEP)"></div>
+    <div class="col-md-4"><input id="imCountry" class="form-control" placeholder="Country (País)" value="Brazil"></div>
 
     <div class="col-md-6"><input id="imEmail" class="form-control" placeholder="E-mail"></div>
-    <div class="col-md-6"><input id="imPhone" class="form-control" placeholder="Phone"></div>
+    <div class="col-md-6"><input id="imPhone" class="form-control" placeholder="Phone (Telefone ou Celular)"></div>
 </div>
 </div>
 
@@ -72,7 +72,7 @@ body { background:#f4f6f9; }
 <div class="card shadow-sm mb-3">
 <div class="card-header fw-bold">Dados do Invoice/Pedido</div>
 <div class="card-body row g-2">
-    <div class="col-md-4"><input id="invoiceNumber" class="form-control" placeholder="Invoice Number (Peça para o vendedor)"></div>
+    <div class="col-md-4"><input id="invoiceNumber" class="form-control" placeholder="Invoice Number (Peça o nº para o vendedor)"></div>
     <div class="col-md-4"><input id="invoiceDate" type="date" class="form-control"></div>
 	<div class="col-md-4">
 		<select id="incoterm" class="form-select">
@@ -101,11 +101,11 @@ Produtos
 <table class="table table-bordered align-middle text-center" id="productsTable">
 <thead class="table-light">
 <tr>
-<th>Product</th>
-<th>Description</th>
-<th>NCM</th>
-<th>Quantity</th>
-<th>Unit price (USD)</th>
+<th>Product (Nome do Produto)</th>
+<th>Description (Descrição do Produto)</th>
+<th>HSCODE (NCM)</th>
+<th>Quantity (Quantidade)</th>
+<th>Unit price (USD) (Valor Unitário)</th>
 <th>Action</th>
 </tr>
 </thead>
@@ -315,7 +315,7 @@ function generateInvoice(){
 
 		<table class="table table-bordered">
 		<tr>
-		<th>Product</th><th>Description</th><th>NCM</th>
+		<th>Product</th><th>Description</th><th>HSCode</th>
 		<th>Quantity</th><th>Unit price (USD)</th><th>Total Amount (USD)</th>
 		</tr>
 		${rows}
